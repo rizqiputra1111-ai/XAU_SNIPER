@@ -3,477 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Institutional Gold Analytics Dashboard v17.1 - Deployment Safe</title>
-    <!-- Memuat Library Grafik Interaktif TradingView Lightweight Charts -->
+    <title>AI Institutional Gold Analytics Dashboard v17.2</title>
+    <!-- Library TradingView -->
     <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-            background-color: #0c0d14;
-            color: #cbd5e1;
-            margin: 0;
-            padding: 12px;
-        }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-        .panel {
-            background-color: #131722;
-            padding: 14px;
-            border-radius: 8px;
-            border: 1px solid #2a2e39;
-        }
-        .row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .col {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        label {
-            font-size: 0.75rem;
-            color: #787b86;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        select, input {
-            background-color: #1e222d;
-            border: 1px solid #2a2e39;
-            color: #fff;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            outline: none;
-        }
-        button {
-            background: linear-gradient(135deg, #b38f4d, #d4af37);
-            border: none;
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-            padding: 12px;
-            width: 100%;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 5px;
-        }
-        .setup-dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 10px;
-            margin-bottom: 5px;
-        }
-        .metric-card {
-            background-color: #131722;
-            border: 1px solid #2a2e39;
-            border-radius: 8px;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            position: relative;
-            overflow: hidden;
-        }
-        .metric-card::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 4px;
-            background: #d4af37;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #0c0d14; color: #cbd5e1; margin: 0; padding: 12px; }
+        .container { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+        .panel { background-color: #131722; padding: 14px; border-radius: 8px; border: 1px solid #2a2e39; }
+        .row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        label { font-size: 0.75rem; color: #787b86; font-weight: bold; text-transform: uppercase; }
+        select, input { background-color: #1e222d; border: 1px solid #2a2e39; color: #fff; padding: 10px; border-radius: 6px; font-size: 0.85rem; outline: none; }
+        button { background: linear-gradient(135deg, #b38f4d, #d4af37); border: none; color: #000; font-weight: bold; cursor: pointer; padding: 12px; width: 100%; border-radius: 6px; font-size: 0.9rem; text-transform: uppercase; margin-top: 5px; }
+        .setup-dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+        .metric-card { background-color: #131722; border: 1px solid #2a2e39; border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden; }
+        .metric-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: #d4af37; }
         .metric-card.danger::before { background: #ef4444; }
         .metric-card.success::before { background: #10b981; }
         .metric-card.progress-mode::before { background: #06b6d4; }
-        
-        .metric-title {
-            font-size: 0.7rem;
-            color: #787b86;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .metric-value {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: #fff;
-            margin-top: 2px;
-        }
-        .metric-sub {
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-        .status-badge {
-            font-size: 0.95rem;
-            font-weight: 900;
-            letter-spacing: 1px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-top: 5px;
-        }
-        .badge-waiting {
-            color: #fbbf24;
-            background: rgba(251, 191, 36, 0.1);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-        }
-        .badge-progress {
-            color: #06b6d4;
-            background: rgba(6, 182, 212, 0.1);
-            border: 1px solid rgba(6, 182, 212, 0.4);
-            animation: pulse-border 2s infinite;
-        }
-        @keyframes pulse-border {
-            0% { opacity: 0.7; }
-            50% { opacity: 1; border-color: #06b6d4; }
-            100% { opacity: 0.7; }
-        }
-
-        .chart-panel {
-            background-color: #131722;
-            border-radius: 8px;
-            border: 1px solid #2a2e39;
-            padding: 10px;
-            position: relative;
-        }
-        .chart-label {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(19, 23, 34, 0.9);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            color: #d4af37;
-            border: 1px solid #2a2e39;
-            z-index: 10;
-        }
-        #interactiveChart {
-            width: 100%;
-            height: 450px;
-        }
-        .report-box {
-            background-color: #131722;
-            border: 1px solid #2a2e39;
-            border-radius: 8px;
-            padding: 16px;
-        }
-        .terminal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #2a2e39;
-            padding-bottom: 8px;
-            margin-bottom: 14px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: #d4af37;
-        }
-        .output-text {
-            font-family: 'Courier New', Courier, monospace;
-            white-space: pre-wrap;
-            font-size: 0.82rem;
-            color: #e2e8f0;
-            line-height: 1.5;
-        }
+        .metric-title { font-size: 0.7rem; color: #787b86; font-weight: bold; text-transform: uppercase; }
+        .metric-value { font-size: 1.25rem; font-weight: bold; color: #fff; margin-top: 2px; }
+        .metric-sub { font-size: 0.75rem; color: #94a3b8; }
+        .status-badge { font-size: 0.95rem; font-weight: 900; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 5px; }
+        .badge-waiting { color: #fbbf24; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); }
+        .badge-progress { color: #06b6d4; background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.4); }
+        .chart-panel { background-color: #131722; border-radius: 8px; border: 1px solid #2a2e39; padding: 10px; position: relative; }
+        .chart-label { position: absolute; top: 20px; left: 20px; background: rgba(19, 23, 34, 0.9); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; color: #d4af37; border: 1px solid #2a2e39; z-index: 10; }
+        #interactiveChart { width: 100%; height: 450px; }
+        .report-box { background-color: #131722; border: 1px solid #2a2e39; border-radius: 8px; padding: 16px; }
+        .terminal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2e39; padding-bottom: 8px; margin-bottom: 14px; font-size: 0.8rem; font-weight: bold; color: #d4af37; }
+        .output-text { font-family: 'Courier New', monospace; white-space: pre-wrap; font-size: 0.82rem; color: #e2e8f0; line-height: 1.5; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- INPUT CONTROL PANEL -->
     <div class="panel">
         <div class="row">
             <div class="col">
-                <label>Mode Filter Sniper & Konfluensi</label>
+                <label>Mode Filter Sniper</label>
                 <select id="tradingMode">
-                    <option value="ULTRA">💎 ULTRA CONFLUENCE (SMC + OTE + AMD + DXY Matrix)</option>
-                    <option value="M1_CHOCH">⚡ SHORT SCALPER (HTF POI + M1/M5 CHoCH Trigger)</option>
-                    <option value="LIQUIDITY">🏹 LIQUIDITY SWEEP ONLY (Asia High/Low Hunt)</option>
+                    <option value="ULTRA">💎 ULTRA CONFLUENCE</option>
+                    <option value="M1_CHOCH">⚡ SHORT SCALPER</option>
                 </select>
             </div>
             <div class="col">
-                <label>Arah Bias Utama (HTF H1/H4)</label>
+                <label>Arah Bias Utama</label>
                 <select id="arahBias">
-                    <option value="BULLISH" selected>📈 ORDER FLOW BULLISH (Mencari OTE & Discount OB)</option>
-                    <option value="BEARISH">📉 ORDER FLOW BEARISH (Mencari OTE & Premium OB)</option>
-                    <option value="KONFLIK">⚠️ MACRO SIDEWAYS / CONFLICTING (Wait & See)</option>
+                    <option value="BULLISH" selected>📈 ORDER FLOW BULLISH</option>
+                    <option value="BEARISH">📉 ORDER FLOW BEARISH</option>
+                    <option value="KONFLIK">⚠️ MACRO SIDEWAYS</option>
                 </select>
             </div>
         </div>
         <div class="row">
             <div class="col">
-                <label>Ukuran Akun / Balance ($)</label>
-                <input type="number" id="accountSizeInput" value="10000" step="500">
+                <label>Balance ($)</label>
+                <input type="number" id="accountSizeInput" value="10000">
             </div>
             <div class="col">
-                <label>Batas Risiko Per Entri (%)</label>
+                <label>Risiko (%)</label>
                 <select id="riskPercentInput">
-                    <option value="0.5">0.5% (Konservatif / Pro)</option>
-                    <option value="1.0" selected>1.0% (Standar Institusi)</option>
-                    <option value="2.0">2.0% (Agresif Scalper)</option>
+                    <option value="1.0" selected>1.0%</option>
+                    <option value="2.0">2.0%</option>
                 </select>
             </div>
         </div>
-        <button id="btnCalculate">🎯 RE-CALCULATE & DRAW VISUAL SETUP LINES</button>
+        <button id="btnCalculate">🎯 CALCULATE MATRIX</button>
     </div>
 
-    <!-- MAIN HOMEPAGE VISUAL CARDS -->
     <div class="setup-dashboard-grid">
         <div class="metric-card" id="cardTracker">
-            <div class="metric-title">📡 SNIPER TRIGGER STATUS</div>
+            <div class="metric-title">📡 TRIGGER STATUS</div>
             <div id="executionBadge" class="status-badge badge-waiting">LOADING...</div>
             <div class="metric-sub" id="livePriceMonitor">Live Price: $--</div>
         </div>
         <div class="metric-card" id="cardVerdict">
-            <div class="metric-title">🎯 CONFLUENCE WINRATE VERDICT</div>
+            <div class="metric-title">🎯 WINRATE VERDICT</div>
             <div class="metric-value" id="valVerdict">-</div>
             <div class="metric-sub" id="valWinrate">Winrate: --</div>
         </div>
         <div class="metric-card" id="cardKeyLevel">
             <div class="metric-title">🏛️ OTE SWEET SPOT (70.5%)</div>
-            <div class="metric-value" id="valKeyLevel" style="font-size: 1.15rem; color: #d4af37;">-</div>
-            <div class="metric-sub" id="valKeyDesc">Menunggu Mitigasi Valid</div>
+            <div class="metric-value" id="valKeyLevel" style="color: #d4af37;">-</div>
+            <div class="metric-sub" id="valKeyDesc">-</div>
         </div>
         <div class="metric-card" id="cardRisk">
-            <div class="metric-title">💼 PROFESSIONALS RISK & LOT</div>
+            <div class="metric-title">💼 RISK & LOT</div>
             <div class="metric-value" id="valLot">-</div>
             <div class="metric-sub" id="valSlPips">SL: -- Pips</div>
         </div>
     </div>
 
-    <!-- INTERACTIVE REAL-TIME CHART VIEWPORT -->
     <div class="chart-panel">
-        <div class="chart-label">TARGET INTERAKTIF: XAUUSD (GOLD) REALTIME SNIPER ENGINE</div>
+        <div class="chart-label">TARGET INTERAKTIF XAUUSD</div>
         <div id="interactiveChart"></div>
     </div>
 
-    <!-- TERMINAL OUTPUT REPORT -->
     <div class="report-box">
         <div class="terminal-header">
-            <span>🏛️ AI SNIPER INTERACTIVE PROTOCOL v17.1</span>
+            <span>🏛️ AI SNIPER PROTOCOL v17.2</span>
             <span style="color: #10b981;" id="syncStatus">🟢 ACTIVE</span>
         </div>
-        <div class="output-text" id="terminalOutput">Mengompilasi matriks eksekusi sniper harian...</div>
+        <div class="output-text" id="terminalOutput">Initializing...</div>
     </div>
 </div>
 
-<script>
-    let chart, candleSeries;
-    let entryLine, slLine, tp1Line, tp2Line;
-
-    // AMAN UNTUK DEPLOY: Menggunakan inisialisasi data statis tanpa loop berat
-    function initInteractiveChart() {
-        const chartElement = document.getElementById('interactiveChart');
-        chart = LightweightCharts.createChart(chartElement, {
-            layout: { backgroundColor: '#131722', textColor: '#cbd5e1' },
-            grid: { vertLines: { color: '#1e222d' }, horzLines: { color: '#1e222d' } },
-            crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-            priceScale: { borderColor: '#2a2e39' },
-            timeScale: { borderColor: '#2a2e39', timeVisible: true },
-        });
-
-        candleSeries = chart.addCandlestickSeries({
-            upColor: '#10b981', downColor: '#ef4444',
-            borderUpColor: '#10b981', borderDownColor: '#ef4444',
-            wickUpColor: '#10b981', wickDownColor: '#ef4444',
-        });
-
-        // Set baseline data statis awal agar GitHub Actions tidak terkena infinite loop timeout
-        let t = Math.floor(Date.now() / 1000);
-        candleSeries.setData([
-            { time: t - 180, open: 4121.5, high: 4124.0, low: 4120.0, close: 4123.0 },
-            { time: t - 120, open: 4123.0, high: 4125.5, low: 4121.0, close: 4122.5 },
-            { time: t - 60,  open: 4122.5, high: 4126.0, low: 4122.0, close: 4124.6 }
-        ]);
-
-        window.addEventListener('resize', () => {
-            chart.resize(chartElement.clientWidth, 450);
-        });
-    }
-
-    function updateChartLines(entry, sl, tp1, tp2, showLines) {
-        if (entryLine) { candleSeries.removePriceLine(entryLine); entryLine = null; }
-        if (slLine) { candleSeries.removePriceLine(slLine); slLine = null; }
-        if (tp1Line) { candleSeries.removePriceLine(tp1Line); tp1Line = null; }
-        if (tp2Line) { candleSeries.removePriceLine(tp2Line); tp2Line = null; }
-
-        if (!showLines) return;
-
-        entryLine = candleSeries.createPriceLine({ price: entry, color: '#eab308', lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: 'SNIPER ENTRY (OTE 70.5%)' });
-        slLine = candleSeries.createPriceLine({ price: sl, color: '#ef4444', lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: 'INVALIDATION (STOP LOSS)' });
-        tp1Line = candleSeries.createPriceLine({ price: tp1, color: '#10b981', lineWidth: 1, lineStyle: 1, axisLabelVisible: true, title: 'TARGET PROFIT 1 (RRR 1:3)' });
-        tp2Line = candleSeries.createPriceLine({ price: tp2, color: '#10b981', lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: 'TARGET PROFIT 2 (RRR 1:5)' });
-    }
-
-    async function calculateMatrix() {
-        const statusHeader = document.getElementById('syncStatus');
-        statusHeader.innerText = "⏳ SCANNING CONFLUENCE LEVEL...";
-        statusHeader.style.color = "#d4af37";
-
-        let currentPrice = 4124.67; 
-
-        try {
-            const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=XAUUSDT');
-            if(response.ok) {
-                const resData = await response.json();
-                if(resData && resData.price) {
-                    currentPrice = parseFloat(resData.price);
-                }
-            }
-        } catch (e) {
-            console.log("Menggunakan backup feed.");
-        }
-
-        statusHeader.innerText = "🟢 FEED SYNCED AT $" + currentPrice.toFixed(2);
-        statusHeader.style.color = "#10b981";
-        document.getElementById('livePriceMonitor').innerText = "Live Price: $" + currentPrice.toFixed(2);
-
-        let lastTime = Math.floor(Date.now() / 1000);
-        candleSeries.update({
-            time: lastTime,
-            open: currentPrice - 0.20,
-            high: currentPrice + 0.40,
-            low: currentPrice - 0.50,
-            close: currentPrice
-        });
-
-        let confluenceScore = 0;
-        let totalMatrixRules = 6; 
-        
-        const now = new Date();
-        const hrs = now.getHours();
-        let sessionName = "⚠️ ASIA (ACCUMULATION PHASE)";
-        let isKillzone = false;
-
-        if (hrs >= 13 && hrs < 17) { sessionName = "⚡ LONDON SESSION (KILLZONE)"; confluenceScore++; isKillzone = true; }
-        else if (hrs >= 19 && hrs < 23) { sessionName = "🔥 NEW YORK SESSION (KILLZONE)"; confluenceScore++; isKillzone = true; }
-
-        const mode = document.getElementById('tradingMode').value;
-        const bias = document.getElementById('arahBias').value;
-        const balance = parseFloat(document.getElementById('accountSizeInput').value) || 10000;
-        const riskPercent = parseFloat(document.getElementById('riskPercentInput').value) || 1.0;
-
-        let dailyOpenPrice = currentPrice - 3.20; 
-        let isAmdValid = false;
-        if (bias === "BULLISH" && currentPrice < (dailyOpenPrice + 3.0)) { confluenceScore++; isAmdValid = true; }
-        else if (bias === "BEARISH" && currentPrice > (dailyOpenPrice - 3.0)) { confluenceScore++; isAmdValid = true; }
-
-        let rangeProyeksi = 9.5; 
-        let ote62, ote705, ote79, slLevel, tp1, tp2, pipsSL;
-        let keyLevelName = "";
-
-        if (bias === "BULLISH" || bias === "KONFLIK") {
-            ote62 = currentPrice - (rangeProyeksi * 0.62);
-            ote705 = currentPrice - (rangeProyeksi * 0.705);
-            ote79 = currentPrice - (rangeProyeksi * 0.79);
-            slLevel = ote79 - 0.75; 
-            pipsSL = (ote705 - slLevel) * 10;
-            tp1 = ote705 + (pipsSL * 0.3); 
-            tp2 = ote705 + (pipsSL * 0.5); 
-            keyLevelName = "Discount OB M1";
-        } else {
-            ote62 = currentPrice + (rangeProyeksi * 0.62);
-            ote705 = currentPrice + (rangeProyeksi * 0.705);
-            ote79 = currentPrice + (rangeProyeksi * 0.79);
-            slLevel = ote79 + 0.75;
-            pipsSL = (slLevel - ote705) * 10;
-            tp1 = ote705 - (pipsSL * 0.3);
-            tp2 = ote705 - (pipsSL * 0.5);
-            keyLevelName = "Premium OB M1";
-        }
-
-        if (bias !== "KONFLIK") confluenceScore += 2;
-        if (mode === "ULTRA" && bias !== "KONFLIK") confluenceScore += 2;
-
-        let riskAmount = balance * (riskPercent / 100);
-        let targetLot = riskAmount / (pipsSL * 1.0); 
-
-        let finalVerdict = "";
-        let winrateEstimation = "40%";
-        const cardVerdict = document.getElementById('cardVerdict');
-        const cardTracker = document.getElementById('cardTracker');
-        const execBadge = document.getElementById('executionBadge');
-        
-        cardVerdict.className = "metric-card";
-        cardTracker.className = "metric-card";
-
-        if (confluenceScore >= 6 && isKillzone) { winrateEstimation = "85% - 90%"; finalVerdict = "🎯 HIGH PROB SNIPER"; cardVerdict.classList.add("success"); } 
-        else if (confluenceScore >= 4) { winrateEstimation = "65% - 70%"; finalVerdict = "⚠️ CONDITIONAL ENTRY"; } 
-        else { winrateEstimation = "30%"; finalVerdict = "❌ SKIP SETUP"; cardVerdict.classList.add("danger"); }
-
-        let executionStatusText = "PATIENTLY WAITING";
-        execBadge.className = "status-badge badge-waiting";
-
-        if (bias !== "KONFLIK" && finalVerdict !== "❌ SKIP SETUP") {
-            if (bias === "BULLISH" && currentPrice <= ote62 && currentPrice >= slLevel) {
-                executionStatusText = "🎯 SNIPER ZONE ACTIVE";
-                execBadge.className = "status-badge badge-progress";
-                cardTracker.classList.add("progress-mode");
-            } else if (bias === "BEARISH" && currentPrice >= ote62 && currentPrice <= slLevel) {
-                executionStatusText = "🎯 SNIPER ZONE ACTIVE";
-                execBadge.className = "status-badge badge-progress";
-                cardTracker.classList.add("progress-mode");
-            }
-        }
-        
-        execBadge.innerText = executionStatusText;
-        document.getElementById('valVerdict').innerText = finalVerdict;
-        document.getElementById('valWinrate').innerText = "Est. Winrate Matrix: " + winrateEstimation;
-        
-        if (bias === "KONFLIK") {
-            document.getElementById('valKeyLevel').innerText = "CONFLICTING";
-            document.getElementById('valLot').innerText = "0.00 Lot";
-            updateChartLines(0, 0, 0, 0, false);
-        } else {
-            document.getElementById('valKeyLevel').innerText = "$" + ote705.toFixed(2);
-            document.getElementById('valKeyDesc').innerText = "POI: " + keyLevelName;
-            document.getElementById('valSlPips').innerText = "Refined SL: " + pipsSL.toFixed(1) + " Pips";
-            document.getElementById('valLot').innerText = targetLot.toFixed(2) + " Lot";
-            
-            updateChartLines(ote705, slLevel, tp1, tp2, true);
-        }
-
-        // OUTPUT TERMINAL LOGS
-        document.getElementById('terminalOutput').innerText = 
-            "========================================================================\n" +
-            "       🏛️ AUTOMATED INTERACTIVE SNIPER PROTOCOL CORE MATRIX\n" +
-            "========================================================================\n\n" +
-            "• Sesi Pasar & AMD : " + sessionName + "\n" +
-            "• Validitas PO3    : " + (isAmdValid ? "✅ VALID" : "❌ INVALID") + "\n" +
-            "• Total Konfluensi : " + confluenceScore + " / " + totalMatrixRules + " Aturan Terpenuhi\n\n" +
-            "📌 DATA UPDATE LIVE LINE:\n" +
-            "- Level Entry Tergambar : $" + ote705.toFixed(2) + "\n" +
-            "- Level Stop Loss       : $" + slLevel.toFixed(2) + "\n" +
-            "- Take Profit 1 (1:3)   : $" + tp1.toFixed(2) + "\n" +
-            "- Take Profit 2 (1:5)   : $" + tp2.toFixed(2);
-    }
-
-    // EVENT LISTENER INTERAKTIF UNTUK REAL-TIME TRIGGER
-    document.getElementById('btnCalculate').addEventListener('click', calculateMatrix);
-    document.getElementById('tradingMode').addEventListener('change', calculateMatrix);
-    document.getElementById('arahBias').addEventListener('change', calculateMatrix);
-    document.getElementById('accountSizeInput').addEventListener('input', calculateMatrix);
-    document.getElementById('riskPercentInput').addEventListener('change', calculateMatrix);
-
-    window.onload = function() {
-        initInteractiveChart();
-        setTimeout(calculateMatrix, 500);
-        setInterval(calculateMatrix, 5000); // Polling real-time 5 detik
-    };
-</script>
-
+<!-- Memanggil eksternal file JS agar aman dari Jekyll Build -->
+<script src="app.js"></script>
 </body>
 </html>
