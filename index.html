@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Institutional Gold Analytics Dashboard v17.0 - Interactive Realtime Charts</title>
+    <title>AI Institutional Gold Analytics Dashboard v17.1 - Deployment Safe</title>
     <!-- Memuat Library Grafik Interaktif TradingView Lightweight Charts -->
     <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <style>
@@ -140,7 +140,6 @@
             100% { opacity: 0.7; }
         }
 
-        /* CONTAINER GRAFIK BARU INTERAKTIF */
         .chart-panel {
             background-color: #131722;
             border-radius: 8px;
@@ -255,7 +254,7 @@
         </div>
     </div>
 
-    <!-- NEW INTERACTIVE REAL-TIME CHART VIEWPORT -->
+    <!-- INTERACTIVE REAL-TIME CHART VIEWPORT -->
     <div class="chart-panel">
         <div class="chart-label">TARGET INTERAKTIF: XAUUSD (GOLD) REALTIME SNIPER ENGINE</div>
         <div id="interactiveChart"></div>
@@ -264,7 +263,7 @@
     <!-- TERMINAL OUTPUT REPORT -->
     <div class="report-box">
         <div class="terminal-header">
-            <span>🏛️ AI SNIPER INTERACTIVE PROTOCOL v17.0</span>
+            <span>🏛️ AI SNIPER INTERACTIVE PROTOCOL v17.1</span>
             <span style="color: #10b981;" id="syncStatus">🟢 ACTIVE</span>
         </div>
         <div class="output-text" id="terminalOutput">Mengompilasi matriks eksekusi sniper harian...</div>
@@ -272,11 +271,10 @@
 </div>
 
 <script>
-    // GLOBAL VARIABLE UNTUK GRAFIK TRADINGVIEW LIGHTWEIGHT
     let chart, candleSeries;
     let entryLine, slLine, tp1Line, tp2Line;
 
-    // Inisialisasi Grafik saat Aplikasi Dibuka Pertama Kali
+    // AMAN UNTUK DEPLOY: Menggunakan inisialisasi data statis tanpa loop berat
     function initInteractiveChart() {
         const chartElement = document.getElementById('interactiveChart');
         chart = LightweightCharts.createChart(chartElement, {
@@ -293,29 +291,20 @@
             wickUpColor: '#10b981', wickDownColor: '#ef4444',
         });
 
-        // Mengisi Data Candle Awal (Simulasi Pergerakan Harga Emas $4125 real-time)
-        let baseTime = Math.floor(Date.now() / 1000) - 100 * 60;
-        let data = [];
-        let curValue = 4124.50;
-        for (let i = 0; i < 100; i++) {
-            let open = curValue + (Math.random() - 0.5) * 4;
-            let high = open + Math.random() * 5;
-            let low = open - Math.random() * 5;
-            let close = (high + low) / 2;
-            data.push({ time: baseTime + i * 60, open, high, low, close });
-            curValue = close;
-        }
-        candleSeries.setData(data);
+        // Set baseline data statis awal agar GitHub Actions tidak terkena infinite loop timeout
+        let t = Math.floor(Date.now() / 1000);
+        candleSeries.setData([
+            { time: t - 180, open: 4121.5, high: 4124.0, low: 4120.0, close: 4123.0 },
+            { time: t - 120, open: 4123.0, high: 4125.5, low: 4121.0, close: 4122.5 },
+            { time: t - 60,  open: 4122.5, high: 4126.0, low: 4122.0, close: 4124.6 }
+        ]);
 
-        // Resize responsive handler
         window.addEventListener('resize', () => {
             chart.resize(chartElement.clientWidth, 450);
         });
     }
 
-    // Fungsi Utama Menggambar Garis Target Realtime di Chart[span_2](start_span)[span_2](end_span)
     function updateChartLines(entry, sl, tp1, tp2, showLines) {
-        // Hapus garis lama jika sudah terpasang agar tidak menumpuk[span_3](start_span)[span_3](end_span)
         if (entryLine) { candleSeries.removePriceLine(entryLine); entryLine = null; }
         if (slLine) { candleSeries.removePriceLine(slLine); slLine = null; }
         if (tp1Line) { candleSeries.removePriceLine(tp1Line); tp1Line = null; }
@@ -323,7 +312,6 @@
 
         if (!showLines) return;
 
-        // Gambarlah Garis Baru Secara Realtime Berdasarkan Hitungan Dropdown[span_4](start_span)[span_4](end_span)
         entryLine = candleSeries.createPriceLine({ price: entry, color: '#eab308', lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: 'SNIPER ENTRY (OTE 70.5%)' });
         slLine = candleSeries.createPriceLine({ price: sl, color: '#ef4444', lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: 'INVALIDATION (STOP LOSS)' });
         tp1Line = candleSeries.createPriceLine({ price: tp1, color: '#10b981', lineWidth: 1, lineStyle: 1, axisLabelVisible: true, title: 'TARGET PROFIT 1 (RRR 1:3)' });
@@ -337,7 +325,6 @@
 
         let currentPrice = 4124.67; 
 
-        // FETCHING DATA STABIL VIA BINANCE API[span_5](start_span)[span_5](end_span)
         try {
             const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=XAUUSDT');
             if(response.ok) {
@@ -354,7 +341,6 @@
         statusHeader.style.color = "#10b981";
         document.getElementById('livePriceMonitor').innerText = "Live Price: $" + currentPrice.toFixed(2);
 
-        // Inject data baru secara live ke candle terakhir di grafik
         let lastTime = Math.floor(Date.now() / 1000);
         candleSeries.update({
             time: lastTime,
@@ -450,14 +436,13 @@
         if (bias === "KONFLIK") {
             document.getElementById('valKeyLevel').innerText = "CONFLICTING";
             document.getElementById('valLot').innerText = "0.00 Lot";
-            updateChartLines(0, 0, 0, 0, false); // Matikan visual garis jika struktur rusak[span_6](start_span)[span_6](end_span)
+            updateChartLines(0, 0, 0, 0, false);
         } else {
             document.getElementById('valKeyLevel').innerText = "$" + ote705.toFixed(2);
             document.getElementById('valKeyDesc').innerText = "POI: " + keyLevelName;
             document.getElementById('valSlPips').innerText = "Refined SL: " + pipsSL.toFixed(1) + " Pips";
             document.getElementById('valLot').innerText = targetLot.toFixed(2) + " Lot";
             
-            // UPDATE MATRIX GARIS REALTIME KE CHART KETIKA DIKLIK ATAU HARGA BERGERAK[span_7](start_span)[span_7](end_span)
             updateChartLines(ote705, slLevel, tp1, tp2, true);
         }
 
@@ -486,7 +471,7 @@
     window.onload = function() {
         initInteractiveChart();
         setTimeout(calculateMatrix, 500);
-        setInterval(calculateMatrix, 5000); // Polling real-time super cepat (5 detik)
+        setInterval(calculateMatrix, 5000); // Polling real-time 5 detik
     };
 </script>
 
